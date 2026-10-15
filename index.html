@@ -1,0 +1,275 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tài Xỉu VIP</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090b10;color:#f5f1e7;font-family:Arial,sans-serif}
+header{text-align:center;padding:22px 10px;background:linear-gradient(135deg,#17130a,#33240b);border-bottom:1px solid #b68b32}
+h1{margin:0;color:#f5ca62;letter-spacing:3px}
+header p{color:#c8b98e;margin:8px 0 0}
+.wrap{max-width:850px;margin:auto;padding:14px}
+.card{background:#141720;border:1px solid #34313a;border-radius:14px;padding:16px;margin-bottom:14px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.gold{color:#f5ca62}
+.wallet{font-size:22px;font-weight:bold;color:#f5ca62}
+button,select{background:#30250f;color:#f7d577;border:1px solid #9b772a;border-radius:9px;padding:11px 14px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:hover:not(:disabled){background:#4b3815}
+.status{text-align:center;font-size:18px;color:#f5ca62;margin:10px 0}
+.timer{text-align:center;font-size:34px;font-weight:bold;margin:8px}
+.dice-area{position:relative;min-height:145px;display:flex;justify-content:center;align-items:center;gap:14px;overflow:hidden}
+.die{width:64px;height:64px;background:#f7f3e8;color:#171717;border-radius:12px;display:grid;place-items:center;font-size:38px;box-shadow:0 4px 0 #b8ae9b}
+.bowl{position:absolute;width:210px;height:105px;top:10px;border-radius:15px 15px 95px 95px;background:linear-gradient(135deg,#d4ad53,#805315 50%,#e6c66c);border:4px solid #f0d27e;box-shadow:0 7px 15px #0009;transition:transform 8s ease,opacity 1s}
+.bowl.open{transform:translateY(-125px) rotate(-8deg);opacity:.15}
+.betbuttons{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bet{padding:18px 8px;font-size:21px}
+.tai{border-color:#c94c43;color:#ff958c}
+.xiu{border-color:#4d8cd5;color:#91c6ff}
+small{color:#aaa}
+input,select{max-width:100%}
+input{width:110px;background:#090b10;color:white;border:1px solid #66552d;border-radius:8px;padding:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 5px;text-align:center;border-bottom:1px solid #30313a}
+th{color:#f5ca62}
+.pills{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+.pill{padding:7px 10px;border-radius:8px;background:#262831;font-size:13px}
+.road{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+.cell{height:32px;border-radius:50%;display:grid;place-items:center;background:#292b34;font-size:12px}
+.red{background:#8e2929}.blue{background:#174d85}.green{background:#276b42}
+.notice{color:#aaa;font-size:12px;line-height:1.5}
+footer{text-align:center;color:#777;padding:12px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>👑 TÀI XỈU VIP</h1>
+  <p>Vận may hôm nay · Chỉ sử dụng điểm ảo</p>
+</header>
+
+<div class="wrap">
+  <div class="card row">
+    <div>
+      <small>VÍ ĐIỂM ẢO</small>
+      <div class="wallet"><span id="points">1000</span> điểm</div>
+    </div>
+    <button id="dailyBtn" onclick="dailyBonus()">🎁 Điểm danh +100</button>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <b class="gold">PHIÊN <span id="round">1</span></b>
+      <span id="phaseLabel">Đang nhận cược</span>
+    </div>
+    <div class="timer" id="timer">60</div>
+    <div class="dice-area">
+      <div class="die" id="d1">⚀</div>
+      <div class="die" id="d2">⚁</div>
+      <div class="die" id="d3">⚂</div>
+      <div class="bowl" id="bowl"></div>
+    </div>
+    <div class="status" id="result">Đặt cược để bắt đầu!</div>
+    <div class="row">
+      <label>Số điểm cược:
+        <input id="betAmount" type="number" min="10" step="10" value="100">
+      </label>
+      <small>Tối thiểu 10 điểm</small>
+    </div>
+    <div class="betbuttons" style="margin-top:14px">
+      <button class="bet tai" id="taiBtn" onclick="placeBet('Tài')">🔴 CƯỢC TÀI</button>
+      <button class="bet xiu" id="xiuBtn" onclick="placeBet('Xỉu')">🔵 CƯỢC XỈU</button>
+    </div>
+    <p class="notice">Quy tắc: 3 xúc xắc tổng 4–10 là Xỉu; 11–17 là Tài. Bộ ba đồng số làm cả hai cửa thua. Thắng cửa thường nhận tổng cộng gấp 2 lần điểm cược, gồm cả vốn.</p>
+  </div>
+
+  <div class="card">
+    <h3 class="gold">📊 CẦU TÀI XỈU</h3>
+    <div class="pills">
+      <span class="pill">🔴 Tài: <b id="taiCount">0</b></span>
+      <span class="pill">🔵 Xỉu: <b id="xiuCount">0</b></span>
+      <span class="pill">🟢 Bộ ba: <b id="tripleCount">0</b></span>
+    </div>
+    <div class="road" id="road"></div>
+    <h4 class="gold">Lịch sử gần đây</h4>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Phiên</th><th>Xúc xắc</th><th>Tổng</th><th>Kết quả</th></tr></thead>
+        <tbody id="history"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3 class="gold">🏆 THỐNG KÊ CỦA BẠN</h3>
+    <div class="row">
+      <span>Số lượt cược: <b id="betCount">0</b></span>
+      <span>Thắng: <b id="winCount">0</b></span>
+      <span>Thua: <b id="loseCount">0</b></span>
+    </div>
+    <p class="notice">Đây là bản demo chạy trên một trình duyệt. Dữ liệu được lưu trên thiết bị này, không tự đồng bộ giữa những người chơi.</p>
+    <button onclick="resetGame()">Chơi lại từ đầu</button>
+  </div>
+</div>
+<footer>TÀI XỈU VIP · DEMO ĐIỂM ẢO · KHÔNG NẠP/RÚT TIỀN</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const KEY="taixiu_vip_demo_v1";
+const today=()=>new Date().toLocaleDateString("en-CA");
+
+let saved={};
+try{saved=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){saved={}}
+
+let points=Number(saved.points??1000);
+let round=Number(saved.round??1);
+let history=Array.isArray(saved.history)?saved.history:[];
+let stats=saved.stats||{bets:0,wins:0,losses:0};
+let lastDaily=saved.lastDaily||"";
+let currentBet=null;
+let phase="bet";
+let seconds=60;
+let dice=[1,2,3];
+let nextResult=null;
+
+function save(){
+  localStorage.setItem(KEY,JSON.stringify({
+    points,round,history,stats,lastDaily
+  }));
+}
+function render(){
+  $("points").textContent=points.toLocaleString("vi-VN");
+  $("round").textContent=round;
+  $("betCount").textContent=stats.bets;
+  $("winCount").textContent=stats.wins;
+  $("loseCount").textContent=stats.losses;
+  $("dailyBtn").disabled=lastDaily===today();
+  $("dailyBtn").textContent=lastDaily===today()?"✅ Đã điểm danh":"🎁 Điểm danh +100";
+  $("taiCount").textContent=history.filter(x=>x.side==="Tài").length;
+  $("xiuCount").textContent=history.filter(x=>x.side==="Xỉu").length;
+  $("tripleCount").textContent=history.filter(x=>x.triple).length;
+
+  $("history").innerHTML=history.slice(0,12).map(x=>
+    `<tr><td>${x.round}</td><td>${x.dice.join(" - ")}</td>
+    <td>${x.total}</td><td style="color:${x.triple?'#62d98c':x.side==='Tài'?'#ff958c':'#91c6ff'}">${x.triple?'Bộ ba':x.side}</td></tr>`
+  ).join("");
+
+  const recent=history.slice(0,32).reverse();
+  $("road").innerHTML=recent.map(x=>
+    `<div class="cell ${x.triple?'green':x.side==='Tài'?'red':'blue'}">${x.triple?'3':x.side==='Tài'?'T':'X'}</div>`
+  ).join("");
+  if(!recent.length)$("road").innerHTML='<span class="notice">Chưa có kết quả.</span>';
+}
+function dailyBonus(){
+  if(lastDaily===today())return;
+  points+=100;
+  lastDaily=today();
+  save();render();
+  $("result").textContent="🎁 Điểm danh thành công: +100 điểm ảo!";
+}
+function placeBet(side){
+  if(phase!=="bet"||currentBet)return;
+  const amount=Math.floor(Number($("betAmount").value));
+  if(!Number.isFinite(amount)||amount<10){
+    $("result").textContent="Mức cược tối thiểu là 10 điểm.";return;
+  }
+  if(amount>points){
+    $("result").textContent="Bạn không đủ điểm ảo!";return;
+  }
+  points-=amount;
+  currentBet={side,amount};
+  $("result").textContent=`Đã cược ${amount} điểm vào ${side}.`;
+  $("taiBtn").disabled=true;$("xiuBtn").disabled=true;
+  save();render();
+}
+function rollDice(){
+  dice=[1,2,3].map(()=>Math.floor(Math.random()*6)+1);
+  nextResult={
+    dice:[...dice],
+    total:dice.reduce((a,b)=>a+b,0),
+    triple:dice[0]===dice[1]&&dice[1]===dice[2]
+  };
+  nextResult.side=nextResult.total<=10?"Xỉu":"Tài";
+}
+function showDice(){
+  ["d1","d2","d3"].forEach((id,i)=>{
+    $(id).textContent=["⚀","⚁","⚂","⚃","⚄","⚅"][dice[i]-1];
+  });
+}
+function finishRound(){
+  const r=nextResult;
+  let message=`Kết quả: ${r.dice.join(" - ")} = ${r.total}. `;
+  if(r.triple){
+    message+="Bộ ba! Cả Tài và Xỉu đều thua.";
+    if(currentBet){stats.losses++;stats.bets++;}
+  }else{
+    message+=r.side+"!";
+    if(currentBet){
+      stats.bets++;
+      if(currentBet.side===r.side){
+        const payout=currentBet.amount*2;
+        points+=payout;stats.wins++;
+        message+=` Bạn thắng +${currentBet.amount} điểm lãi.`;
+      }else{
+        stats.losses++;
+        message+=" Bạn thua lượt cược này.";
+      }
+    }
+  }
+  history.unshift({round,dice:[...r.dice],total:r.total,side:r.side,triple:r.triple});
+  history=history.slice(0,100);
+  $("result").textContent=message;
+  save();render();
+  currentBet=null;
+  round++;
+  phase="bet";
+  seconds=60;
+  $("bowl").classList.remove("open");
+  $("phaseLabel").textContent="Đang nhận cược";
+  $("taiBtn").disabled=false;$("xiuBtn").disabled=false;
+  save();render();
+}
+function tick(){
+  seconds--;
+  $("timer").textContent=seconds;
+  if(seconds<=0){
+    if(phase==="bet"){
+      phase="reveal";
+      rollDice();
+      $("phaseLabel").textContent="Đang mở bát";
+      $("result").textContent="Bát đang được mở...";
+      $("taiBtn").disabled=true;$("xiuBtn").disabled=true;
+      $("bowl").classList.add("open");
+      seconds=20;
+    }else{
+      showDice();
+      finishRound();
+    }
+  }
+}
+function resetGame(){
+  if(!confirm("Xóa dữ liệu demo và bắt đầu lại?"))return;
+  points=1000;round=1;history=[];
+  stats={bets:0,wins:0,losses:0};lastDaily="";
+  currentBet=null;phase="bet";seconds=60;
+  $("timer").textContent=60;
+  $("result").textContent="Đặt cược để bắt đầu!";
+  $("phaseLabel").textContent="Đang nhận cược";
+  $("bowl").classList.remove("open");
+  $("taiBtn").disabled=false;$("xiuBtn").disabled=false;
+  save();render();showDice();
+}
+$("timer").textContent=seconds;
+showDice();render();
+setInterval(()=>{
+  if(phase==="bet"||phase==="reveal"){
+    $("timer").textContent=seconds;
+    tick();
+    $("timer").textContent=seconds;
+  }
+},1000);
+</script>
+</body>
+</html>
